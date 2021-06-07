@@ -3,7 +3,6 @@
 #include <string.h> 
 #define LINESIZE 256 
 #define WORDSIZE 20 
-#define SENTENCESIZE 100
 char paragraph_delimeter = '\n';
 char sentence_delimeter = '.';
 char word_delimeter = ' '; 
@@ -30,7 +29,7 @@ void open_file_to_write(FILE*, char*);
 void notOpened();
 void read_whole_text(FILE*, char*); 
 void read_a_line(FILE*, int, char*);
-void get_word(FILE*, char*, int, int, int); // fileptr and word number 
+void get_word(FILE*, char*, int, int); // fileptr and word number 
 void get_sentence(FILE*, int, int); // opens file, iterates through (u can use FSEEK )
 void get_paragraph(FILE*, int); 
 int main(int argc, char* argv[]){
@@ -55,41 +54,29 @@ int main(int argc, char* argv[]){
      
 
 }
-void get_word(FILE* fileptr, char* filename, int para_num, int sentence_num, int word_num){
+void get_word(FILE* fileptr, char* filename, int line_num, int word_num){
     fileptr = fopen(filename, "r" ); 
-    int word_counter = 1, sentence_counter=1, para_counter=1;  
-    char get;
+    int word_counter=1, line_counter=1; 
     if(!fileptr) notOpened();  
     else{ // file is opened
-        char paragraph[LINESIZE]; //  not declaring them as a malloc cuz we can not pass string literal to strtok() function   
-        char sentence[SENTENCESIZE];
+        char word[WORDSIZE]; //  not declaring them as a malloc cuz we can not pass string literal to strtok() function   
+        char line[LINESIZE];
     //     char* word = (char*)malloc(sizeof(char)*WORDSIZE); 
-        while((get = fgetc(fileptr)) != EOF){
-            if(get == word_delimeter) word_counter++; 
-            if(get == sentence_delimeter) sentence_counter++;
-            if(get ==  paragraph_delimeter) para_counter++;
-            if(para_counter == para_num){ // get the line of that paragraph
-                fscanf(fileptr, "%s", paragraph);
-                char *ptr = paragraph; 
-                char* tok;
-                printf("sentence of this paragraph that we want: \n");  
-                while((tok = strtok(ptr, &sentence_delimeter)) != NULL){
-                    if(sentence_counter == sentence_num) { // get the sentence to our dynamic sentence array and break the while loop. 
-                      sentence =  tok; 
-                      printf("%s.\n", tok);
-                      ptr = NULL;
-                      break; 
-                    }  
-                    sentence_counter++; 
-                    ptr = NULL ; 
+        char* wordptr = word; 
+        while((fgets(line, LINESIZE, fileptr)) != NULL){
+            if(line_counter == line_num){ 
+                for (wordptr = strtok(line," "); wordptr != NULL; wordptr = strtok(NULL, " "))
+                {
+                    
+                    if(word_counter == word_num){
+                        strcpy(word, wordptr); 
+                        puts(word); 
+                    }
+                    word_counter++; 
                 }
-                ptr = sentence; 
-                printf("word of this paragraph that we want: "); 
-      
-                
-                
-                
             }
+            line_counter++;
+         
         }
     }
 }
@@ -101,10 +88,11 @@ void get_paragraph(FILE* fileptr, int para_num){
 } 
 void open_file_to_read(FILE* fileptr, char* name){
     char choice;
-    int para_num, word_num, sentence_num; 
+    int word_num; 
+    int line_num; 
 
     // fileptr = fopen(name, "r");
-    printf("Read whole text: (Press t) / Read a line: (Press l): / Read a word (press w): "); 
+    printf("Read whole text: (Press t) / Read a line: (Press l): / Read a word from a line(press w): "); 
     scanf("%c", &choice);     
     // choice = getchar(); // i can add this getchar to grab the ENTER after previous scanf 
     switch(choice){
@@ -113,13 +101,13 @@ void open_file_to_read(FILE* fileptr, char* name){
             break; 
         case 'l': // get a line number for this 
             printf("Enter the line number you wanna read: "); 
-            scanf("%d", &sentence_num ); 
-            read_a_line(fileptr, sentence_num, name );  
+            scanf("%d", &line_num ); 
+            read_a_line(fileptr, line_num,  name );  
             break;
         case 'w': 
-            printf("enter the paragraph number, sentence number and word number respectively: "); 
-            scanf("%d %d %d", &para_num, &sentence_num, &word_num); 
-            get_word(fileptr, name, para_num, sentence_num, word_num);  
+            printf("enter the line number and word number respectively: "); 
+            scanf("%d %d", &line_num,  &word_num); 
+            get_word(fileptr, name, line_num, word_num);  
             break;  
     }
      
