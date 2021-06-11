@@ -30,8 +30,7 @@ void notOpened();
 void read_whole_text(FILE*, char*); 
 void read_a_line(FILE*, int, char*);
 void get_word(FILE*, char*, int, int); // fileptr and word number 
-void get_sentence(FILE*, int, int); // opens file, iterates through (u can use FSEEK )
-void get_paragraph(FILE*, int); 
+int count_word(FILE*, char*, char*); // file, filename, word 
 int main(int argc, char* argv[]){
    char choice; 
    //  char* filename = "text.txt"; 
@@ -53,6 +52,23 @@ int main(int argc, char* argv[]){
     }
      
 
+}
+int count_word(FILE* fileptr, char* filename, char* word){
+    fileptr = fopen(filename, "r"); 
+    char line[LINESIZE]; 
+    int count = 0; 
+    char* wordptr;   
+    if(!fileptr) notOpened(); 
+    else{ // file is opened 
+        while((fgets(line, LINESIZE, fileptr))!=NULL){
+            for (wordptr = strtok(line," "); wordptr != NULL; wordptr = strtok(NULL, " "))
+                {
+                    if(strcmp(wordptr, word) == 0) // word is found 
+                        count++; 
+                }
+        }
+    }
+    return count; 
 }
 void get_word(FILE* fileptr, char* filename, int line_num, int word_num){
     fileptr = fopen(filename, "r" ); 
@@ -80,19 +96,14 @@ void get_word(FILE* fileptr, char* filename, int line_num, int word_num){
         }
     }
 }
-void get_sentence(FILE* fileptr, int para_num, int sentence_num){
 
-}
-void get_paragraph(FILE* fileptr, int para_num){
-
-} 
 void open_file_to_read(FILE* fileptr, char* name){
     char choice;
     int word_num; 
     int line_num; 
-
+    char word[WORDSIZE]; 
     // fileptr = fopen(name, "r");
-    printf("Read whole text: (Press t) / Read a line: (Press l): / Read a word from a line(press w): "); 
+    printf("Read whole text: (Press t) / Read a line: (Press l): / Read a word from a line(Press w) / count a word (Press c): "); 
     scanf("%c", &choice);     
     // choice = getchar(); // i can add this getchar to grab the ENTER after previous scanf 
     switch(choice){
@@ -108,6 +119,14 @@ void open_file_to_read(FILE* fileptr, char* name){
             printf("enter the line number and word number respectively: "); 
             scanf("%d %d", &line_num,  &word_num); 
             get_word(fileptr, name, line_num, word_num);  
+            break;
+        case 'c': 
+            printf("Enter the word to count the occurences: "); 
+            scanf("%s", word); 
+            int count = count_word(fileptr, name, word);
+            if(count == 0) printf("word is not in file\n"); 
+            else 
+                printf("number of %s is %d\n", word, count); 
             break;  
     }
      
